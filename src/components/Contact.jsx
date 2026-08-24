@@ -1,8 +1,29 @@
+import { useLayoutEffect, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import TextReveal from './TextReveal'
 import Magnetic from './Magnetic'
 import { site } from '../data/content'
 
+gsap.registerPlugin(ScrollTrigger)
+
 export default function Contact() {
+  const cta = useRef(null)
+
+  // Phones have no hover, so the CTA fills with ember while it's centred.
+  useLayoutEffect(() => {
+    const mm = gsap.matchMedia()
+    mm.add('(max-width: 860px) and (prefers-reduced-motion: no-preference)', () => {
+      ScrollTrigger.create({
+        trigger: cta.current,
+        start: 'top 72%',
+        end: 'bottom 28%',
+        toggleClass: { targets: cta.current, className: 'is-lit' },
+      })
+    })
+    return () => mm.revert()
+  }, [])
+
   const toTop = (e) => {
     e.preventDefault()
     const lenis = window.__lenis
@@ -27,7 +48,7 @@ export default function Contact() {
 
         <div data-reveal>
           <Magnetic>
-            <a className="contact-cta" href={`mailto:${site.email}`}>
+            <a className="contact-cta" href={`mailto:${site.email}`} ref={cta}>
               {site.email}
             </a>
           </Magnetic>

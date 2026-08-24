@@ -42,8 +42,31 @@ function Stat({ value, suffix, label }) {
 }
 
 export default function About() {
+  const root = useRef(null)
+
+  // Phones: each paragraph brightens word by word as it is scrolled through,
+  // so reading pace and scroll pace line up. Desktop keeps the plain fade-up.
+  useLayoutEffect(() => {
+    const mm = gsap.matchMedia()
+    mm.add('(max-width: 860px) and (prefers-reduced-motion: no-preference)', () => {
+      root.current.querySelectorAll('.about-para').forEach((para) => {
+        gsap.fromTo(
+          para.querySelectorAll('.rw'),
+          { opacity: 0.42 },
+          {
+            opacity: 1,
+            ease: 'none',
+            stagger: 0.04,
+            scrollTrigger: { trigger: para, start: 'top 80%', end: 'bottom 52%', scrub: true },
+          }
+        )
+      })
+    })
+    return () => mm.revert()
+  }, [])
+
   return (
-    <section className="about section-solid" id="about">
+    <section className="about section-solid" id="about" ref={root}>
       <div className="container about-grid">
         <div className="about-side">
           <p className="eyebrow mono" data-reveal>
@@ -58,7 +81,11 @@ export default function About() {
 
           {site.about.map((para, i) => (
             <p className="about-para" data-reveal key={i}>
-              {para}
+              {para.split(' ').map((word, wi) => (
+                <span className="rw" key={wi}>
+                  {word}{' '}
+                </span>
+              ))}
             </p>
           ))}
 

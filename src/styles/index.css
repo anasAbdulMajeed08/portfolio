@@ -227,6 +227,12 @@ html.lenis body {
   text-transform: uppercase;
   letter-spacing: 0.13em;
 }
+/* Padding + negative margin = 44px tap targets, same visual position. */
+.nav-logo,
+.nav-link {
+  padding: 12px 6px;
+  margin: -12px -6px;
+}
 .nav-links {
   display: flex;
   gap: clamp(18px, 3vw, 40px);
@@ -237,9 +243,9 @@ html.lenis body {
 .nav-link::after {
   content: '';
   position: absolute;
-  left: 0;
-  bottom: -5px;
-  width: 100%;
+  left: 6px;
+  right: 6px;
+  bottom: 7px;
   height: 1px;
   background: currentColor;
   transform: scaleX(0);
@@ -319,6 +325,24 @@ html.lenis body {
   background: var(--dim);
   transform-origin: top;
   animation: scrollPulse 2.1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes scrollPulseX {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  45% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  55% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
 }
 @keyframes scrollPulse {
   0% {
@@ -469,7 +493,8 @@ html.lenis body {
   overflow: hidden;
   transition: border-color 0.35s ease, transform 0.35s ease;
 }
-.card:hover {
+.card:hover,
+.card.is-active {
   border-color: rgba(238, 122, 60, 0.55);
   transform: translateY(-4px);
 }
@@ -548,10 +573,12 @@ html.lenis body {
   -webkit-backdrop-filter: blur(6px);
   transition: transform 0.35s ease, background-color 0.35s ease;
 }
-.card:hover .card-arrow {
+.card:hover .card-arrow,
+.card.is-active .card-arrow {
   background: rgba(10, 14, 22, 0.9);
 }
-.card:hover .card-arrow {
+.card:hover .card-arrow,
+.card.is-active .card-arrow {
   transform: translate(5px, -5px);
 }
 .card-body {
@@ -661,7 +688,9 @@ html.lenis body {
   transition: background-size 0.45s cubic-bezier(0.65, 0, 0.35, 1), color 0.35s ease,
     border-color 0.35s ease;
 }
-.contact-cta:hover {
+.contact-cta:hover,
+.contact-cta:active,
+.contact-cta.is-lit {
   background-size: 100% 100%;
   color: var(--ink);
   border-color: var(--ember);
@@ -699,6 +728,8 @@ html.lenis body {
   letter-spacing: 0.12em;
 }
 .footer-top {
+  padding: 12px 0;
+  margin: -12px 0;
   transition: color 0.3s ease;
 }
 .footer-top:hover {
@@ -707,6 +738,9 @@ html.lenis body {
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
+  .nav {
+    padding: 18px var(--pad);
+  }
   .nav-loc {
     display: none;
   }
@@ -718,9 +752,10 @@ html.lenis body {
     height: auto;
     aspect-ratio: 16 / 10;
   }
-  .hero-scroll {
-    right: auto;
-    left: var(--pad);
+  /* GSAP drives the artwork (parallax) on phones; give it headroom to move. */
+  .card-media {
+    inset: -4% 0;
+    transition: none;
   }
   .about-grid {
     grid-template-columns: 1fr;
@@ -742,6 +777,45 @@ html.lenis body {
   .work-endcap {
     width: 100%;
     padding: 34px 24px;
+  }
+}
+
+/*
+  Portrait-ish viewports: the forge can't sit beside the hero text, so
+  Scene.jsx lifts it above (same aspect threshold: width / height < 1.2)
+  and the text moves to the lower part of the hero to make room.
+*/
+@media (max-width: 860px), (max-aspect-ratio: 6/5) {
+  .hero {
+    align-items: flex-end;
+    padding-bottom: 10vh;
+  }
+  .hero-inner {
+    padding-top: 90px;
+  }
+  /* Scroll cue moves into the flow (it overlapped the tagline when absolute). */
+  .hero-scroll {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .hero-scroll-line {
+    width: 56px;
+    height: 1px;
+    animation-name: scrollPulseX;
+  }
+}
+
+@media (max-width: 400px) {
+  .nav-logo,
+  .nav-link {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+  .nav-links {
+    gap: 14px;
   }
 }
 

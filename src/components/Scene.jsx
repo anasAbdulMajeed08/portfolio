@@ -47,13 +47,17 @@ function Forge({ reduced }) {
   const wire = useRef()
   const rim = useRef()
   const scroll = useRef(0)
+  const velocity = useRef(0)
   const pointer = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
     const st = ScrollTrigger.create({
       start: 0,
       end: 'max',
-      onUpdate: (self) => (scroll.current = self.progress),
+      onUpdate: (self) => {
+        scroll.current = self.progress
+        velocity.current = self.getVelocity()
+      },
     })
     const onMove = (e) => {
       pointer.current.x = (e.clientX / window.innerWidth) * 2 - 1
@@ -76,16 +80,26 @@ function Forge({ reduced }) {
 
     // Keep waypoints on screen for narrow viewports.
     const fit = Math.min(1, state.viewport.width / 8.6)
-    const mobileScale = state.viewport.width < 6 ? 0.78 : 1
+    // Portrait-ish viewports (same threshold as the hero media query in
+    // index.css): the object can't sit beside the hero text, so it sits
+    // above it (the lift fades out by the about waypoint) and stays a touch
+    // smaller at the contact end so the CTA isn't buried in the wireframe.
+    const narrow = state.size.width / state.size.height < 1.2
+    const lift = narrow ? (1 - Math.min(p / 0.3, 1)) * 1.35 : 0
+    const mobileScale = narrow ? 0.72 - Math.max(0, (p - 0.65) / 0.35) * 0.1 : 1
 
     g.position.x += (k.x * fit - g.position.x) * d
-    g.position.y += (k.y + Math.sin(t * 0.55) * 0.09 - g.position.y) * d
+    g.position.y += (k.y + lift + Math.sin(t * 0.55) * 0.09 - g.position.y) * d
 
     const targetS = k.s * mobileScale
     const s = g.scale.x + (targetS - g.scale.x) * d
     g.scale.setScalar(s)
 
-    const spin = reduced ? 0.03 : 0.2 + p * 0.55
+    // Scroll velocity spins the object up (decays once scrolling stops) —
+    // the touch-screen stand-in for the pointer parallax.
+    velocity.current *= Math.exp(-2.5 * delta)
+    const kick = reduced ? 0 : Math.min(Math.abs(velocity.current) / 2200, 1.4)
+    const spin = reduced ? 0.03 : 0.2 + p * 0.55 + kick
     g.rotation.y += delta * spin
     const rx = Math.sin(t * 0.25) * 0.12 + (reduced ? 0 : pointer.current.y * 0.22)
     const rz = reduced ? 0 : pointer.current.x * 0.1

@@ -11,7 +11,12 @@ function Row({ items, reverse, outline }) {
   useLayoutEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const el = ref.current
+    // Rows lean into the scroll direction and settle when it stops —
+    // most noticeable on a flicked touch scroll.
+    const skewTo = gsap.quickTo(el, 'skewX', { duration: 0.5, ease: 'power3' })
+    const clampSkew = gsap.utils.clamp(-9, 9)
     const ctx = gsap.context(() => {
+
       gsap.fromTo(
         el,
         { xPercent: reverse ? -24 : 0 },
@@ -23,11 +28,17 @@ function Row({ items, reverse, outline }) {
             start: 'top bottom',
             end: 'bottom top',
             scrub: 0.6,
+            onUpdate: (self) => skewTo(clampSkew(self.getVelocity() / -320)),
           },
         }
       )
     }, el)
-    return () => ctx.revert()
+    const settle = () => skewTo(0)
+    ScrollTrigger.addEventListener('scrollEnd', settle)
+    return () => {
+      ScrollTrigger.removeEventListener('scrollEnd', settle)
+      ctx.revert()
+    }
   }, [reverse])
 
   const loop = [...items, ...items, ...items]
