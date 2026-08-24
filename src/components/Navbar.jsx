@@ -11,6 +11,14 @@ const LINKS = [
 export default function Navbar({ started }) {
   const root = useRef(null)
 
+  // The preloader overlay is transparent, so hide the nav until the intro
+  // hands off (skipped for reduced motion, where there is no intro).
+  useLayoutEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const ctx = gsap.context(() => gsap.set('.nav-item', { opacity: 0 }), root)
+    return () => ctx.revert()
+  }, [])
+
   useLayoutEffect(() => {
     if (!started) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return

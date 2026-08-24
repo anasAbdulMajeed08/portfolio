@@ -3,8 +3,13 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { intro } from '../lib/intro'
+import { Assembly, Glow, Shockwave } from './LoaderParticles'
 
 gsap.registerPlugin(ScrollTrigger)
+
+// easeOutBack — the solid core lands with a little overshoot.
+const backOut = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2)
 
 const EMBER = '#ee7a3c'
 const STEEL = '#4a6ea8'
@@ -42,8 +47,9 @@ function interp(p) {
   }
 }
 
-function Forge({ reduced }) {
-  const group = useRef()
+function Forge({ reduced, groupRef }) {
+  const group = groupRef
+  const core = useRef()
   const wire = useRef()
   const rim = useRef()
   const scroll = useRef(0)
@@ -88,8 +94,14 @@ function Forge({ reduced }) {
     const lift = narrow ? (1 - Math.min(p / 0.3, 1)) * 1.35 : 0
     const mobileScale = narrow ? 0.72 - Math.max(0, (p - 0.65) / 0.35) * 0.1 : 1
 
-    g.position.x += (k.x * fit - g.position.x) * d
-    g.position.y += (k.y + lift + Math.sin(t * 0.55) * 0.09 - g.position.y) * d
+    // Until the intro releases it, the forge assembles at the centre of the
+    // screen; then it glides to its hero waypoint as the title rises.
+    const a = intro.assemble
+    const b = intro.burst
+    const tx = intro.released ? k.x * fit : 0
+    const ty = intro.released ? k.y + lift : 0
+    g.position.x += (tx - g.position.x) * d
+    g.position.y += (ty + Math.sin(t * 0.55) * 0.09 - g.position.y) * d
 
     const targetS = k.s * mobileScale
     const s = g.scale.x + (targetS - g.scale.x) * d
@@ -99,20 +111,29 @@ function Forge({ reduced }) {
     // the touch-screen stand-in for the pointer parallax.
     velocity.current *= Math.exp(-2.5 * delta)
     const kick = reduced ? 0 : Math.min(Math.abs(velocity.current) / 2200, 1.4)
-    const spin = reduced ? 0.03 : 0.2 + p * 0.55 + kick
+    // Spins faster while the particle cloud is still gathering.
+    const spin = reduced ? 0.03 : 0.2 + p * 0.55 + kick + (1 - a) * 1.1
     g.rotation.y += delta * spin
     const rx = Math.sin(t * 0.25) * 0.12 + (reduced ? 0 : pointer.current.y * 0.22)
     const rz = reduced ? 0 : pointer.current.x * 0.1
     g.rotation.x += (rx - g.rotation.x) * d
     g.rotation.z += (rz - g.rotation.z) * d
 
+    // Intro: the core pops in with overshoot as the particles burst, the
+    // wireframe fades up behind them and the rim light flashes.
+    if (core.current) {
+      core.current.visible = b > 0
+      core.current.scale.setScalar(b >= 1 ? 1 : b <= 0 ? 0.001 : backOut(b))
+    }
+    const flash = Math.sin(Math.min(1, b) * Math.PI) * 7
+
     // "Heat up" toward the contact section.
     if (wire.current) {
-      wire.current.material.opacity = 0.24 + p * 0.34
+      wire.current.material.opacity = (0.24 + p * 0.34) * Math.min(1, b * 1.6)
       const pulse = 1.12 + Math.sin(t * 0.9) * 0.014
       wire.current.scale.setScalar(pulse)
     }
-    if (rim.current) rim.current.intensity = 2.4 + p * 4.2
+    if (rim.current) rim.current.intensity = 2.4 + p * 4.2 + flash
   })
 
   return (
@@ -122,15 +143,25 @@ function Forge({ reduced }) {
       <directionalLight ref={rim} position={[-5, -3, -4]} intensity={2.4} color={EMBER} />
       <directionalLight position={[0, 6, -6]} intensity={0.7} color={STEEL} />
 
-      <group ref={group} position={[1.95, -0.15, 0]}>
-        <mesh>
+      <group ref={group} position={reduced ? [1.95, -0.15, 0] : [0, 0, 0]}>
+        <mesh ref={core} visible={reduced}>
           <icosahedronGeometry args={[1.35, 1]} />
           <meshStandardMaterial color="#131826" metalness={0.72} roughness={0.26} flatShading />
         </mesh>
         <mesh ref={wire} scale={1.12}>
           <icosahedronGeometry args={[1.35, 1]} />
-          <meshBasicMaterial color={EMBER} wireframe transparent opacity={0.28} />
+          {/* depthWrite off: while invisible during the intro it must not
+              carve depth holes through the particles and glow behind it. */}
+          <meshBasicMaterial
+            color={EMBER}
+            wireframe
+            transparent
+            depthWrite={false}
+            opacity={reduced ? 0.28 : 0}
+          />
         </mesh>
+        {!reduced && <Glow />}
+        {!reduced && <Assembly />}
       </group>
     </>
   )
@@ -138,6 +169,7 @@ function Forge({ reduced }) {
 
 function Sparks({ reduced }) {
   const pts = useRef()
+  const mat = useRef()
 
   const geometry = useMemo(() => {
     const count = 650
@@ -159,6 +191,8 @@ function Sparks({ reduced }) {
 
   useFrame((state, delta) => {
     if (!pts.current || reduced) return
+    // Ambient sparks only appear once the assembly has burst.
+    if (mat.current) mat.current.opacity = 0.65 * Math.min(1, intro.burst * 1.2)
     pts.current.rotation.y -= delta * 0.03
     pts.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.12
   })
@@ -166,10 +200,11 @@ function Sparks({ reduced }) {
   return (
     <points ref={pts} geometry={geometry}>
       <pointsMaterial
+        ref={mat}
         size={0.02}
         color={EMBER}
         transparent
-        opacity={0.65}
+        opacity={reduced ? 0.65 : 0}
         sizeAttenuation
         depthWrite={false}
         blending={THREE.AdditiveBlending}
@@ -182,6 +217,7 @@ export default function Scene() {
   const reduced =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const forgeGroup = useRef()
 
   return (
     <div className="webgl" aria-hidden="true">
@@ -190,7 +226,8 @@ export default function Scene() {
         camera={{ position: [0, 0, 6], fov: 45 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       >
-        <Forge reduced={reduced} />
+        <Forge reduced={reduced} groupRef={forgeGroup} />
+        {!reduced && <Shockwave target={forgeGroup} />}
         <Sparks reduced={reduced} />
       </Canvas>
     </div>

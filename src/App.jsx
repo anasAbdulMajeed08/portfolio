@@ -39,10 +39,18 @@ export default function App() {
   }, [])
 
   // Release scroll + settle trigger positions once the intro hands off.
+  // The preloader pins the page to the top while it plays, so a #hash
+  // landing is honoured here instead, with a glide.
   useEffect(() => {
     if (!loaded) return
     window.__lenis?.start()
     ScrollTrigger.refresh()
+    const target = window.location.hash && document.querySelector(window.location.hash)
+    if (target) {
+      const lenis = window.__lenis
+      if (lenis) lenis.scrollTo(target, { duration: 1.6 })
+      else target.scrollIntoView()
+    }
   }, [loaded])
 
   // Generic fade-up for anything tagged data-reveal.
