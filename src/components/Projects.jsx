@@ -15,6 +15,15 @@ function Card({ project, index }) {
       rel="noreferrer"
     >
       <div className="card-art" style={{ background: `radial-gradient(120% 120% at 20% 10%, ${project.tint}, transparent 60%)` }}>
+        {project.image && (
+          <img
+            className="card-img"
+            src={project.image}
+            alt={`${project.title} — homepage`}
+            loading={index < 2 ? "eager" : "lazy"}
+            decoding="async"
+          />
+        )}
         <span className="card-index mono">{String(index + 1).padStart(2, '0')}</span>
         <span className="card-arrow" aria-hidden="true">
           ↗

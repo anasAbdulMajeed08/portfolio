@@ -478,9 +478,37 @@ html.lenis body {
   height: clamp(190px, 32vh, 330px);
   background-color: #0c111d;
   border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transform: scale(1.001);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+/* Scrim so the outlined index and arrow stay legible over bright screenshots. */
+.card-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 14, 22, 0.92) 0%,
+    rgba(10, 14, 22, 0.45) 34%,
+    rgba(10, 14, 22, 0) 62%
+  );
+  pointer-events: none;
+}
+.card:hover .card-img {
+  transform: scale(1.04);
 }
 .card-index {
   position: absolute;
+  z-index: 1;
   left: 22px;
   bottom: 4px;
   font-family: var(--font-display);
@@ -492,11 +520,25 @@ html.lenis body {
 }
 .card-arrow {
   position: absolute;
-  top: 18px;
-  right: 22px;
-  font-size: 1.35rem;
+  z-index: 1;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  line-height: 1;
   color: var(--ember);
-  transition: transform 0.35s ease;
+  background: rgba(10, 14, 22, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.35s ease, background-color 0.35s ease;
+}
+.card:hover .card-arrow {
+  background: rgba(10, 14, 22, 0.9);
 }
 .card:hover .card-arrow {
   transform: translate(5px, -5px);

@@ -47,6 +47,16 @@ export const site = {
 
   projects: [
     {
+      title: 'Lightforma',
+      category: 'Creative Development',
+      year: '2026',
+      description: 'An immersive digital experience for Lightforma, blending interactive visuals, motion, and 3D elements to create a modern web presence.',
+      meta: 'React . GSAP . Three Js',
+      link: 'https://light-forma.vercel.app',
+      image: '/work/lightforma.jpg',
+      tint: 'rgba(238, 170, 60, 0.13)',
+    },
+    {
       title: 'Mall Wayfinding',
       category: 'Web app + kiosk',
       year: '2024',
@@ -54,6 +64,7 @@ export const site = {
         'Interactive wayfinding for a shopping mall — a web app and a fixed touch-screen kiosk, redesigned for tourists, families and accessibility.',
       meta: 'React · TypeScript · Leaflet',
       link: 'https://wayfindr.me', // TODO
+      image: '/work/wayfindr.jpg',
       tint: 'rgba(120, 160, 150, 0.14)',
     },
     {
@@ -64,6 +75,7 @@ export const site = {
         'Role-based management platform — owner, manager, staff and kitchen views with per-restaurant permission overrides and accessibility-first theming.',
       meta: 'Laravel 13 · Inertia · React 18 · TypeScript',
       link: 'https://thefoodmenu.app', // TODO
+      image: '/work/thefoodmenu.jpg',
       tint: 'rgba(90, 130, 190, 0.16)',
     },
     {
@@ -74,6 +86,7 @@ export const site = {
         'Browser reader and annotation engine: text markup, notes, bookmarks, search and offline support for documents past 500 MB and 10,000 pages.',
       meta: 'React · PDF.js · Zustand · TanStack Query',
       link: 'https://read.isdbinstitute.org', // TODO
+      image: '/work/isdb-reader.jpg',
       tint: 'rgba(238, 122, 60, 0.12)',
     },
     {
@@ -84,6 +97,7 @@ export const site = {
         'Annual reports, annual meetings, the 50th-anniversary site and a React-based publications reader for the Islamic Development Bank Group.',
       meta: 'WordPress · WooCommerce · React',
       link: 'https://isdbinstitute.org', // TODO
+      image: '/work/isdb-institute.jpg',
       tint: 'rgba(200, 170, 110, 0.14)',
     },
     {
@@ -94,6 +108,7 @@ export const site = {
         'A high-visibility digital experience for Red Sea Mall, Jeddah — designed and developed to showcase the destination, its brands, experiences, and visitor information across a multilingual frontend.',
       meta: 'Laravel · GSAP · Multilingual · Blade',
       link: 'https://redseamall.com', // TODO
+      image: '/work/redseamall.jpg',
       tint: 'rgba(238, 122, 60, 0.16)',
     },
     {
@@ -104,6 +119,7 @@ export const site = {
         'A modern corporate digital experience for Petrolube — Saudi Arabia’s largest independent lubricants producer. Designed and developed to present its product portfolio, industries, capabilities, sustainability initiatives, and global presence through a multilingual, performance-focused frontend.',
       meta: 'WordPress · GSAP · Multilingual · Blade',
       link: 'https://www.petrolubegroup.com',
+      image: '/work/petrolube.jpg',
       tint: 'rgba(238, 122, 60, 0.16)',
     },
   ],
