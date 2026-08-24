@@ -34,13 +34,13 @@ export default function Contact() {
         </div>
 
         <ul className="socials mono" data-reveal>
-          {site.socials.map((s) => (
+          {/* {site.socials.map((s) => (
             <li key={s.label}>
               <a href={s.url} target="_blank" rel="noreferrer" className="social-link">
                 {s.label} ↗
               </a>
             </li>
-          ))}
+          ))} */}
         </ul>
       </div>
 

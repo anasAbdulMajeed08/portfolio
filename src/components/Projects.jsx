@@ -16,13 +16,17 @@ function Card({ project, index }) {
     >
       <div className="card-art" style={{ background: `radial-gradient(120% 120% at 20% 10%, ${project.tint}, transparent 60%)` }}>
         {project.image && (
-          <img
-            className="card-img"
-            src={project.image}
-            alt={`${project.title} — homepage`}
-            loading={index < 2 ? "eager" : "lazy"}
-            decoding="async"
-          />
+          // Image and scrim share one layer so the hover scale never
+          // leaves a hairline seam at the clipped edge (see .card-media).
+          <div className="card-media">
+            <img
+              className="card-img"
+              src={project.image}
+              alt={`${project.title} — homepage`}
+              loading={index < 2 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+          </div>
         )}
         <span className="card-index mono">{String(index + 1).padStart(2, '0')}</span>
         <span className="card-arrow" aria-hidden="true">

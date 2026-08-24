@@ -480,6 +480,19 @@ html.lenis body {
   border-bottom: 1px solid var(--line);
   overflow: hidden;
 }
+/*
+  The hover zoom is applied to .card-media (image + scrim together), not to
+  the <img>. If the image alone is transformed, the browser composites it and
+  the scrim as separate layers; the art's fractional-pixel clip edge is then
+  anti-aliased per layer and a bright hairline of un-scrimmed image bleeds
+  through along the bottom while the transition runs.
+*/
+.card-media {
+  position: absolute;
+  inset: 0;
+  transform: scale(1.001);
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
 .card-img {
   position: absolute;
   inset: 0;
@@ -487,11 +500,9 @@ html.lenis body {
   height: 100%;
   object-fit: cover;
   object-position: top center;
-  transform: scale(1.001);
-  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 /* Scrim so the outlined index and arrow stay legible over bright screenshots. */
-.card-art::after {
+.card-media::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -503,7 +514,7 @@ html.lenis body {
   );
   pointer-events: none;
 }
-.card:hover .card-img {
+.card:hover .card-media {
   transform: scale(1.04);
 }
 .card-index {
