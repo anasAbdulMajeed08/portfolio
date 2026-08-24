@@ -3,7 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { intro } from '../lib/intro'
+import { intro, shouldSkipIntro } from '../lib/intro'
 import { Assembly, Glow, Shockwave } from './LoaderParticles'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -47,7 +47,7 @@ function interp(p) {
   }
 }
 
-function Forge({ reduced, groupRef }) {
+function Forge({ reduced, skip, groupRef }) {
   const group = groupRef
   const core = useRef()
   const wire = useRef()
@@ -143,8 +143,8 @@ function Forge({ reduced, groupRef }) {
       <directionalLight ref={rim} position={[-5, -3, -4]} intensity={2.4} color={EMBER} />
       <directionalLight position={[0, 6, -6]} intensity={0.7} color={STEEL} />
 
-      <group ref={group} position={reduced ? [1.95, -0.15, 0] : [0, 0, 0]}>
-        <mesh ref={core} visible={reduced}>
+      <group ref={group} position={skip ? [1.95, -0.15, 0] : [0, 0, 0]}>
+        <mesh ref={core} visible={skip}>
           <icosahedronGeometry args={[1.35, 1]} />
           <meshStandardMaterial color="#131826" metalness={0.72} roughness={0.26} flatShading />
         </mesh>
@@ -157,17 +157,17 @@ function Forge({ reduced, groupRef }) {
             wireframe
             transparent
             depthWrite={false}
-            opacity={reduced ? 0.28 : 0}
+            opacity={skip ? 0.28 : 0}
           />
         </mesh>
-        {!reduced && <Glow />}
-        {!reduced && <Assembly />}
+        {!skip && <Glow />}
+        {!skip && <Assembly />}
       </group>
     </>
   )
 }
 
-function Sparks({ reduced }) {
+function Sparks({ reduced, skip }) {
   const pts = useRef()
   const mat = useRef()
 
@@ -204,7 +204,7 @@ function Sparks({ reduced }) {
         size={0.02}
         color={EMBER}
         transparent
-        opacity={reduced ? 0.65 : 0}
+        opacity={skip ? 0.65 : 0}
         sizeAttenuation
         depthWrite={false}
         blending={THREE.AdditiveBlending}
@@ -217,6 +217,10 @@ export default function Scene() {
   const reduced =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // No intro this load (reduced motion, or once-per-session already seen):
+  // render the finished state directly. Decided once, at mount, in step
+  // with the preloader.
+  const skip = typeof window !== 'undefined' && shouldSkipIntro()
   const forgeGroup = useRef()
 
   return (
@@ -226,9 +230,9 @@ export default function Scene() {
         camera={{ position: [0, 0, 6], fov: 45 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       >
-        <Forge reduced={reduced} groupRef={forgeGroup} />
-        {!reduced && <Shockwave target={forgeGroup} />}
-        <Sparks reduced={reduced} />
+        <Forge reduced={reduced} skip={skip} groupRef={forgeGroup} />
+        {!skip && <Shockwave target={forgeGroup} />}
+        <Sparks reduced={reduced} skip={skip} />
       </Canvas>
     </div>
   )

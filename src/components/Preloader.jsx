@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { site } from '../data/content'
-import { intro, completeIntro } from '../lib/intro'
+import { intro, completeIntro, shouldSkipIntro, markIntroSeen } from '../lib/intro'
 
 /**
  * DOM half of the loading sequence: name, counter and progress line over a
@@ -23,7 +23,8 @@ export default function Preloader({ onDone }) {
       onDone()
     }
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // Reduced motion, or already seen this session (see src/config.js).
+    if (shouldSkipIntro()) {
       completeIntro()
       gsap.set(root.current, { display: 'none' })
       finish()
@@ -69,6 +70,7 @@ export default function Preloader({ onDone }) {
         .call(
           () => {
             release()
+            markIntroSeen()
             finish()
           },
           null,

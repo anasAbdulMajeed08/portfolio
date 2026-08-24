@@ -1,3 +1,5 @@
+import { config } from '../config'
+
 /**
  * Shared clock for the loading sequence.
  *
@@ -13,9 +15,36 @@
  */
 export const intro = { assemble: 0, burst: 0, released: false }
 
-/** Reduced motion / already loaded: skip straight to the finished state. */
+/** Reduced motion / already seen: jump straight to the finished state. */
 export function completeIntro() {
   intro.assemble = 1
   intro.burst = 1
   intro.released = true
+}
+
+/**
+ * True when the intro should not play at all. Both the preloader and the
+ * scene call this at mount so they agree: reduced motion, or the
+ * once-per-session flag is on and this session has already seen it.
+ * sessionStorage can throw (private mode, blocked storage) — treat that as
+ * "not seen".
+ */
+export function shouldSkipIntro() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true
+  if (!config.intro.oncePerSession) return false
+  try {
+    return window.sessionStorage.getItem(config.intro.storageKey) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Record that this session has watched the intro (no-op if flag is off). */
+export function markIntroSeen() {
+  if (!config.intro.oncePerSession) return
+  try {
+    window.sessionStorage.setItem(config.intro.storageKey, '1')
+  } catch {
+    /* storage unavailable — the intro simply plays again next time */
+  }
 }
